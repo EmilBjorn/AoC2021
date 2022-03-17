@@ -13,28 +13,44 @@ def parse(input):
         bingoPlates = Deck()
         plateList = []
         for i, line in enumerate(f):
-            if i >= 2:
-                if not line.strip():
+            if i >= 2 and i <= 20:
+                if line.strip() == "":
                     plate = Bingoplate(plateList)
                     bingoPlates.add(plate)
-                row = line.split()
-                plateList.append(row)
+                    plateList = []
+                else:
+                    row = line.split()
+                    plateList.append(row)
 
     return bingonum, bingoPlates
-    # How to parse Bingo Plates?
 
 # %%
-# How to store bingo plate?
 
 
 @dataclass
 class Bingoplate:
 
-    rawInput: list
+    rawInput: list = field(repr=False)
+
+    @dataclass
+    class Bingonum:
+        value: int
+        picked: bool
 
     def __post_init__(self):
-        self.values = {}
-        self.picked = {}
+
+        pass
+        # self.values = {}
+        # self.picked = {}
+
+    def __str__(self) -> str:
+        plate = ""
+        for i, row in enumerate(self.rawInput):
+            for j, num in enumerate(row):
+                plate += num + " "
+                # plate[(i,j)] = Bingonum(num,0)
+            plate += '\n'
+        return plate
 
 
 @dataclass
@@ -50,5 +66,6 @@ class Deck:
 
 if __name__ == "__main__":
     nums, bingoPlates = parse("day4/input.txt")
-    print(nums)
-    print(bingoPlates)
+    # print(nums)
+    for i in range(3):
+        print(bingoPlates.plates[i])
