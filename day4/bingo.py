@@ -2,7 +2,8 @@
 # %%
 from dataclasses import dataclass, field
 from multiprocessing.sharedctypes import Value
-from typing import Dict, List
+from turtle import st
+from typing import List
 
 
 # %%
@@ -18,7 +19,7 @@ class Bingoplate:
         value: int
         picked: bool
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.number: dict = {}
         for i, row in enumerate(self.rawInput):
             for j, num in enumerate(row):
@@ -29,12 +30,21 @@ class Bingoplate:
         plate = ""
         for i, row in enumerate(self.rawInput):
             for j, num in enumerate(row):
-                plate += num + " "
+                if int(num) < 10:
+                    strnum = '0'+num
+                else:
+                    strnum = num
+
+                if self.number[(i, j, 'picked')] == True:
+                    strnum = '('+strnum+')'
+                else:
+                    strnum = ' '+strnum+' '
+                plate += strnum + " "
                 # plate[(i,j)] = Bingonum(num,0)
             plate += '\n'
-        return plate
+        return plate.strip('\n')
 
-    def bingocheck(self):
+    def bingocheck(self) -> str:
         # Kode som checker om en plade har bingo et sted
         for i in range(5):
             bingolist = [self.number[i, j, 'picked'] for j in range(5)]
@@ -42,8 +52,13 @@ class Bingoplate:
             bingolist = [self.number[j, i, 'picked'] for j in range(5)]
             # print('Bingolist kolonne', i, 'er: ', bingolist)
             if all(bingolist):
-                return 'BINGO!!'
-        pass
+                return True
+        return False
+
+    def pick(self, drawn_num: int) -> None:
+        for key, item in self.number.items():
+            if int(item) == drawn_num:
+                self.number[key[:2]+('picked',)] = True             # key = (?,?,'val')   ||   key[:2]+('picked',) = (?,?,'picked')
 
 
 @dataclass
@@ -61,7 +76,7 @@ class Deck:
 
 def parse(input):
     with open(input) as f:
-        bingonum = f.readline().strip().split(',')
+        drawnNums = f.readline().strip().split(',')
 
         bingoPlates = Deck()
         plateList = []
@@ -75,7 +90,7 @@ def parse(input):
                     row = line.split()
                     plateList.append(row)
 
-    return bingonum, bingoPlates
+    return drawnNums, bingoPlates
 
 
 def play_bingo(drawn_numbers: list):
@@ -90,8 +105,7 @@ if __name__ == "__main__":
     # print(nums)
     # for i in range(3):
     print(bingoPlates.plates[0])
-    print(bingoPlates.plates[0].number[0, 1, 'val'])
-    print(bingoPlates.plates[0].number[0, 1, 'picked'])
+
     bingoPlates.plates[0].number[0, 1, 'picked'] = True
     bingoPlates.plates[0].number[0, 2, 'picked'] = True
     bingoPlates.plates[0].number[0, 4, 'picked'] = True
@@ -99,9 +113,11 @@ if __name__ == "__main__":
     bingoPlates.plates[0].number[1, 2, 'picked'] = True
     bingoPlates.plates[0].number[2, 2, 'picked'] = True
     bingoPlates.plates[0].number[3, 2, 'picked'] = True
-    bingoPlates.plates[0].number[4, 2, 'picked'] = True
-    print(bingoPlates.plates[0].number[0, 1, 'picked'])
-    print(bingoPlates.plates[0].bingocheck())
+    print()
+    bingoPlates.plates[0].bingocheck()
+    bingoPlates.plates[0].pick(96)
+    print(bingoPlates.plates[0])
+    bingoPlates.plates[0].bingocheck()
 
     # print("\n")
     # for j in range(5):
