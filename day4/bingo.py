@@ -41,12 +41,15 @@ class Bingoplate:
     def bingocheck(self) -> str:
         # Kode som checker om en plade har bingo et sted
         for i in range(5):
-            bingolist = [self.new_numbers[(i, j)]['picked'] for j in range(5)]
-            bingolist = [self.new_numbers[(j, i)]['picked'] for j in range(5)]
+            bingolistHorizontal = [
+                self.new_numbers[(i, j)]['picked'] for j in range(5)
+            ]
+            bingolistVertical = [
+                self.new_numbers[(j, i)]['picked'] for j in range(5)
+            ]
 
             #TODO: Er det smart at den både kan returnere bool & int?
-            if all(bingolist):
-                print('Bingocheck() says BINGO!!')
+            if all(bingolistHorizontal) or all(bingolistVertical):
                 return self.score()
         return False
 
@@ -56,7 +59,7 @@ class Bingoplate:
             if item['val'] == drawn_num:
                 self.new_numbers[key]['picked'] = True
 
-    def score(self):
+    def score(self) -> int:
         score = 0
         #TODO: Gør disse ranges dynamiske ifht størrelsen på bingo-pladen
         for i in range(5):
@@ -75,24 +78,31 @@ class Deck:
     def __post_init__(self):
         self.plates = []
 
-    def add(self, plate):
+    def add(self, plate) -> None:
         self.plates.append(plate)
 
-    def draw(self, drawn_number: int):
+    def draw(self, drawn_number: int) -> tuple[list, list]:
         # Kode som looper over alle trukkede numre og checker om der er bingo
+        winnerPlates = []
+        winnerScores = []
         for plate in self.plates:
             plate.pick(drawn_number)
             bingo = plate.bingocheck()
             if bool(bingo):
-                print(plate)
-                break
-        return bingo
+                winnerPlates.append(plate)
+                winnerScores.append(bingo)
+        return winnerPlates, winnerScores
+
+    def remove_plate(self, del_plate: Bingoplate) -> None:
+        for cur_plate in self.plates:
+            if del_plate == cur_plate:
+                self.plates.remove(del_plate)
 
 
 # %%
 
 
-def parse(input):
+def parse(input) -> tuple[list, list]:
     with open(input) as f:
         drawnNums = f.readline().strip().split(',')
         drawnNums = [int(i) for i in drawnNums]
@@ -112,20 +122,38 @@ def parse(input):
     return drawnNums, bingoPlates
 
 
-def part1():
-    nums, bingoPlates = parse('day4/input.txt')
-
-    bingoPlates.plates = bingoPlates.plates
-    print(bingoPlates.plates)
-
-    for i in nums:
+def part1(numbers, bingoPlates):
+    for i in numbers:
         print('Drawing: ', i)
-        bingo = bingoPlates.draw(i)
+        plate, bingo = bingoPlates.draw(i)
         if bingo:
             break
-    print(bingo)
+    print(plate[0])
+    print(bingo[0])
+
+
+def part2(numbers, bingoPlates):
+    print(len(bingoPlates.plates))
+    for i in numbers:
+
+        winplates, bingoscores = bingoPlates.draw(i)
+        if len(bingoPlates.plates) == 1 and bingoPlates.plates[0].bingocheck():
+            print(bingoPlates.plates[0])
+            print(bingoPlates.plates[0].score())
+            print(bingoPlates.plates[0].bingocheck())
+            break
+        n_rem = 0
+        for plate in bingoPlates.plates:
+            if bool(plate.bingocheck()):
+                bingoPlates.remove_plate(plate)
+                n_rem += 1
+
+        print(
+            f'Draw: {i}. {n_rem} plates removed from set. {len(bingoPlates.plates)} plates remaining.'
+        )
 
 
 # %%
 if __name__ == '__main__':
-    part1()
+    numbers, bingoPlates = parse('day4/input.txt')
+    part2(numbers, bingoPlates)
