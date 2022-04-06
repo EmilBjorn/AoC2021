@@ -14,16 +14,15 @@ class Bingoplate:
     lastDrawn: int = field(repr=False, default=-1)
 
     def __post_init__(self) -> None:
-        self.new_numbers: dict = {}
+        self.numbers: dict = {}
         for i, row in enumerate(self.rawInput):
-            # print(row)
             for j, num in enumerate(row):
-                self.new_numbers[(i, j)] = {'val': int(num), 'picked': False}
+                self.numbers[(i, j)] = {'val': int(num), 'picked': False}
 
     def __str__(self) -> str:
         plate = ''
         for i in range(5):
-            for key, item in self.new_numbers.items():
+            for key, item in self.numbers.items():
                 number = (str(item['val']) if item['val'] > 9 else ' ' +
                           str(item['val']))
 
@@ -42,10 +41,10 @@ class Bingoplate:
         # Kode som checker om en plade har bingo et sted
         for i in range(5):
             bingolistHorizontal = [
-                self.new_numbers[(i, j)]['picked'] for j in range(5)
+                self.numbers[(i, j)]['picked'] for j in range(5)
             ]
             bingolistVertical = [
-                self.new_numbers[(j, i)]['picked'] for j in range(5)
+                self.numbers[(j, i)]['picked'] for j in range(5)
             ]
 
             #TODO: Er det smart at den både kan returnere bool & int?
@@ -55,17 +54,17 @@ class Bingoplate:
 
     def pick(self, drawn_num: int) -> None:
         self.lastDrawn = drawn_num
-        for key, item in self.new_numbers.items():
+        for key, item in self.numbers.items():
             if item['val'] == drawn_num:
-                self.new_numbers[key]['picked'] = True
+                self.numbers[key]['picked'] = True
 
     def score(self) -> int:
         score = 0
         #TODO: Gør disse ranges dynamiske ifht størrelsen på bingo-pladen
         for i in range(5):
             for j in range(5):
-                if not self.new_numbers[(i, j)]['picked']:
-                    score += self.new_numbers[(i, j)]['val']
+                if not self.numbers[(i, j)]['picked']:
+                    score += self.numbers[(i, j)]['val']
 
         score *= self.lastDrawn
         return score
@@ -135,13 +134,13 @@ def part1(numbers, bingoPlates):
 def part2(numbers, bingoPlates):
     print(len(bingoPlates.plates))
     for i in numbers:
+        bingoPlates.draw(i)
 
-        winplates, bingoscores = bingoPlates.draw(i)
         if len(bingoPlates.plates) == 1 and bingoPlates.plates[0].bingocheck():
             print(bingoPlates.plates[0])
-            print(bingoPlates.plates[0].score())
             print(bingoPlates.plates[0].bingocheck())
             break
+
         n_rem = 0
         for plate in bingoPlates.plates:
             if bool(plate.bingocheck()):
