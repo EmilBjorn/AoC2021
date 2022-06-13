@@ -73,8 +73,10 @@ def part2(input):
         pickedcoordset = set(coordlist)
         for coord in coordlist:
             for adj_coord in [
-                (coord[0], coord[1] - 1), (coord[0], coord[1] + 1),
-                (coord[0] - 1, coord[1]), (coord[0] + 1, coord[1])
+                (coord[0], coord[1] - 1),  # 
+                (coord[0], coord[1] + 1),  #
+                (coord[0] - 1, coord[1]),  #
+                (coord[0] + 1, coord[1])
             ]:
                 if input[adj_coord[0]][
                         adj_coord[1]] < 9 and adj_coord not in pickedcoordset:
